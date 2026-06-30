@@ -11,6 +11,7 @@
   body { font-family: "PingFang TC", "PingFang SC", "Microsoft JhengHei", "Microsoft YaHei", "Noto Sans TC", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; background:#FFFFFF; color:#111111; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
   button { font-family: inherit; }
   button:focus { outline: none; }
+  button:active { transform: scale(0.97); }
   table { font-family: inherit; }
   #root:empty::before { content:"載入中..."; display:block; padding:48px; color:#999; font-size:13px; text-align:center; }
 </style>
@@ -350,6 +351,21 @@ const C = {
   oakPale: '#F5EDE0',
   oakDeep: '#A88560'
 };
+
+// v3.15.0 按鈕專用 token（僅用於導覽按鈕，不影響內容區）
+const BTN = {
+  primaryBg: '#1A1A1A',
+  // .btn-primary 底（active）
+  primaryText: '#FFFFFF',
+  secondaryText: '#1A1A1A',
+  // .btn-secondary 字（inactive）
+  secondaryBorder: '#D4D4D4',
+  ghostText: '#737373',
+  radius: 9999,
+  // pill 膠囊
+  letterSpacing: '0.03em',
+  ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)'
+};
 const ROLE_COLORS = {
   sales: '#C9A781',
   pm: '#5B7A8F',
@@ -367,10 +383,10 @@ const KPI_COLORS = {
 };
 const LANGS = [{
   id: 'zh',
-  label: '繁'
+  label: '繁中'
 }, {
   id: 'zh_cn',
-  label: '简'
+  label: '简中'
 }, {
   id: 'en',
   label: 'EN'
@@ -384,6 +400,7 @@ const T = {
     tabCareer: '職級地圖',
     tabKpi: '職務說明書',
     footer: 'WIN-HOUSE · 2026 內部使用',
+    exportMd: '匯出 MD',
     loading: '載入中...',
     loadErr: '資料載入失敗，請確認 JSON 檔與 index.html 放在同一層目錄。',
     // career
@@ -434,6 +451,7 @@ const T = {
     tabCareer: '职级地图',
     tabKpi: '职务说明书',
     footer: 'WIN-HOUSE · 2026 内部使用',
+    exportMd: '导出 MD',
     loading: '加载中...',
     loadErr: '数据加载失败，请确认 JSON 档与 index.html 放在同一层目录。',
     // career
@@ -484,6 +502,7 @@ const T = {
     tabCareer: 'Career Level Map',
     tabKpi: 'Job Description',
     footer: 'WIN-HOUSE · 2026 Internal Use',
+    exportMd: 'Export MD',
     loading: 'Loading...',
     loadErr: 'Failed to load data. Ensure the JSON files sit in the same directory as index.html.',
     step1: '① Select Role Type',
@@ -830,13 +849,14 @@ function CareerMap({
         background: active ? color : C.bg,
         color: active ? '#FFF' : color,
         border: `1.5px solid ${color}`,
+        borderRadius: BTN.radius,
         cursor: 'pointer',
         fontSize: 14,
         fontWeight: active ? 600 : 500,
         display: 'flex',
         alignItems: 'center',
         gap: 6,
-        transition: 'all 0.15s ease'
+        transition: `all 0.18s ${BTN.ease}`
       }
     }, r[lang], cnt > 0 && e('span', {
       style: {
@@ -844,9 +864,10 @@ function CareerMap({
         fontWeight: 600,
         background: active ? 'rgba(255,255,255,0.25)' : color,
         color: '#FFF',
-        width: 16,
+        minWidth: 16,
         height: 16,
-        borderRadius: 8,
+        padding: '0 4px',
+        borderRadius: 9999,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center'
@@ -885,17 +906,18 @@ function CareerMap({
       key: s.id,
       onClick: () => setSubtype(s.id),
       style: {
-        padding: '7px 14px',
+        padding: '7px 16px',
         background: active ? color : C.bg,
         color: active ? '#FFF' : C.text,
         border: `1px solid ${active ? color : C.line}`,
+        borderRadius: BTN.radius,
         cursor: 'pointer',
         fontSize: 12,
         fontWeight: active ? 600 : 400,
         display: 'flex',
         alignItems: 'center',
         gap: 6,
-        transition: 'all 0.15s ease'
+        transition: `all 0.18s ${BTN.ease}`
       }
     }, s[lang], cnt > 0 && e('span', {
       style: {
@@ -906,7 +928,7 @@ function CareerMap({
         minWidth: 14,
         height: 14,
         padding: '0 4px',
-        borderRadius: 7,
+        borderRadius: 9999,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center'
@@ -939,9 +961,9 @@ function CareerMap({
     }
   }, `${t.clear}（${selected.length}）`)), e('div', {
     style: {
-      display: 'flex',
-      gap: 6,
-      flexWrap: 'wrap'
+      display: 'grid',
+      gridTemplateColumns: 'repeat(5, 1fr)',
+      gap: 6
     }
   }, ALL_LEVELS.map(lv => {
     const isSel = selected.some(s => s.role === role && s.subtype === subtype && s.level === lv.id);
@@ -959,7 +981,8 @@ function CareerMap({
         cursor: isAvail ? 'pointer' : 'not-allowed',
         fontSize: 13,
         fontWeight: isSel ? 600 : 400,
-        opacity: isAvail ? 1 : 0.4
+        opacity: isAvail ? 1 : 0.4,
+        transition: `all 0.18s ${BTN.ease}`
       }
     }, lv.id, e('span', {
       style: {
@@ -1528,14 +1551,15 @@ function KpiSystem({
       key: r.id,
       onClick: () => setActiveId(r.id),
       style: {
-        padding: '10px 18px',
+        padding: '10px 20px',
         background: active ? color : C.bg,
         color: active ? '#FFF' : color,
         border: `1.5px solid ${color}`,
+        borderRadius: BTN.radius,
         cursor: 'pointer',
         fontSize: 13,
         fontWeight: active ? 600 : 500,
-        transition: 'all 0.15s ease',
+        transition: `all 0.18s ${BTN.ease}`,
         display: 'flex',
         alignItems: 'center',
         gap: 6
@@ -1543,7 +1567,7 @@ function KpiSystem({
     }, r.name[lang], e('span', {
       style: {
         fontSize: 10,
-        opacity: 0.75,
+        opacity: 0.7,
         fontWeight: 400
       }
     }, r.version));
@@ -1929,6 +1953,267 @@ function KpiSystem({
 }
 
 // ============================================================
+// 匯出 MD（從內嵌資料即時生成，永遠 = 當下網頁內容）
+// ============================================================
+function buildMarkdown(DATA, KPI, lang) {
+  const L = obj => {
+    if (!obj) return '';
+    if (typeof obj === 'string') return obj;
+    // 職級地圖用 zh_tw/en/zh_cn；KPI 用 zh/en/zh_cn
+    return obj[lang] || obj[lang === 'zh' ? 'zh_tw' : lang] || obj.zh || obj.zh_tw || obj.en || '';
+  };
+  const Larr = obj => {
+    const v = obj && (obj[lang] || obj[lang === 'zh' ? 'zh_tw' : lang] || obj.zh || obj.zh_tw || obj.en);
+    return Array.isArray(v) ? v : [];
+  };
+  const out = [];
+  const title = lang === 'en' ? 'WIN-HOUSE Career Level Map & Job Descriptions' : lang === 'zh_cn' ? 'WIN-HOUSE 职级地图与职务说明书' : 'WIN-HOUSE 職級地圖與職務說明書';
+  out.push(`# ${title}`);
+  out.push(`\n_${new Date().toISOString().slice(0, 10)} · ${lang}_\n`);
+
+  // ── Part 1：職級地圖 ──
+  const p1 = lang === 'en' ? 'Part 1 · Career Level Map' : lang === 'zh_cn' ? '第一部分 · 职级地图' : '第一部分 · 職級地圖';
+  out.push(`\n---\n\n## ${p1}\n`);
+  const roleNames = {
+    sales: L({
+      zh_tw: '業務',
+      zh_cn: '业务',
+      en: 'Sales'
+    }),
+    pm: 'PM',
+    fae: 'FAE',
+    ops: L({
+      zh_tw: '內勤',
+      zh_cn: '内勤',
+      en: 'Operations'
+    })
+  };
+  const subNames = {
+    general: L({
+      zh_tw: '一般業務',
+      zh_cn: '一般业务',
+      en: 'General Sales'
+    }),
+    overseas: L({
+      zh_tw: '海外業務',
+      zh_cn: '海外业务',
+      en: 'Overseas Sales'
+    }),
+    remote: L({
+      zh_tw: '遠端拓展',
+      zh_cn: '远端拓展',
+      en: 'Remote Development'
+    }),
+    inside: 'Inside Sales',
+    sales_support: L({
+      zh_tw: '業務助理',
+      zh_cn: '业务助理',
+      en: 'Sales Support'
+    }),
+    purchasing: L({
+      zh_tw: '採購',
+      zh_cn: '采购',
+      en: 'Purchasing'
+    }),
+    finance: L({
+      zh_tw: '財務出納',
+      zh_cn: '财务出纳',
+      en: 'Finance'
+    }),
+    hr: 'HR',
+    mis: 'MIS',
+    warehouse: L({
+      zh_tw: '倉管總務',
+      zh_cn: '仓管总务',
+      en: 'Warehouse & GA'
+    })
+  };
+  const pillars = [['scope', L({
+    zh_tw: '職權範圍',
+    zh_cn: '职权范围',
+    en: 'Scope'
+  })], ['direction', L({
+    zh_tw: '方向判斷',
+    zh_cn: '方向判断',
+    en: 'Direction'
+  })], ['collaboration', L({
+    zh_tw: '協作',
+    zh_cn: '协作',
+    en: 'Collaboration'
+  })], ['execution', L({
+    zh_tw: '執行專業',
+    zh_cn: '执行专业',
+    en: 'Execution'
+  })], ['kpi', L({
+    zh_tw: 'KPI 方向',
+    zh_cn: 'KPI 方向',
+    en: 'KPI Focus'
+  })], ['promotion', L({
+    zh_tw: '升等條件',
+    zh_cn: '升等条件',
+    en: 'Promotion'
+  })]];
+  const levelOrder = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10', 'L11', 'L12'];
+  const dumpLevels = (levelsObj, heading) => {
+    out.push(`\n### ${heading}\n`);
+    levelOrder.forEach(lvId => {
+      const lv = levelsObj[lvId];
+      if (!lv) return;
+      out.push(`\n**${lvId}**`);
+      pillars.forEach(([pid, pname]) => {
+        const items = Larr(lv[pid]);
+        if (items.length) {
+          out.push(`- ${pname}：${items.join('；')}`);
+        }
+      });
+    });
+  };
+  ['sales', 'pm', 'fae', 'ops'].forEach(rid => {
+    const rd = DATA[rid];
+    if (!rd) return;
+    if (rd.subtypes) {
+      Object.keys(rd.subtypes).forEach(sub => {
+        dumpLevels(rd.subtypes[sub], `${roleNames[rid]} · ${subNames[sub] || sub}`);
+      });
+    } else {
+      dumpLevels(rd, roleNames[rid]);
+    }
+  });
+
+  // ── Part 2：職務說明書 ──
+  const p2 = lang === 'en' ? 'Part 2 · Job Descriptions' : lang === 'zh_cn' ? '第二部分 · 职务说明书' : '第二部分 · 職務說明書';
+  out.push(`\n\n---\n\n## ${p2}\n`);
+  KPI.roles.forEach(role => {
+    out.push(`\n### ${L(role.name)} ${role.version || ''}\n`);
+    if (role.positioning) out.push(`\n${L(role.positioning)}\n`);
+
+    // 規則型文件（管理職）
+    if (role.is_rule) {
+      (role.sections || []).forEach(sec => {
+        out.push(`\n**${L(sec.title)}**`);
+        Larr(sec.bullets).forEach(b => out.push(`- ${b}`));
+      });
+      if (role.structure_table) {
+        out.push(`\n**${lang === 'en' ? 'Overall Structure' : '總體結構'}**`);
+        dumpTable(role.structure_table);
+      }
+      if (role.formula) {
+        out.push(`\n**${L(role.formula.title)}**`);
+        Larr(role.formula.bullets).forEach(b => out.push(`- ${b}`));
+      }
+      if (role.mixed_dept) {
+        out.push(`\n**${L(role.mixed_dept.title)}**`);
+        Larr(role.mixed_dept.bullets).forEach(b => out.push(`- ${b}`));
+      }
+      if (role.mapping_table) {
+        out.push(`\n**${L(role.mapping_table.title)}**`);
+        dumpTable(role.mapping_table);
+      }
+      if (role.example) {
+        out.push(`\n**${L(role.example.title)}**`);
+        dumpTable(role.example);
+        if (role.example.note) out.push(`\n_${L(role.example.note)}_`);
+      }
+      if (role.exception) {
+        out.push(`\n**${L(role.exception.title)}**`);
+        Larr(role.exception.bullets).forEach(b => out.push(`- ${b}`));
+      }
+      if (role.tradeoff) {
+        out.push(`\n**${L(role.tradeoff.title)}**`);
+        Larr(role.tradeoff.bullets).forEach(b => out.push(`- ${b}`));
+      }
+      return;
+    }
+
+    // 職權範圍
+    if (role.authority) {
+      out.push(`\n**${lang === 'en' ? 'Scope of Authority' : lang === 'zh_cn' ? '职权范围' : '職權範圍'}**`);
+      role.authority.forEach(a => out.push(`- ${L(a.item)}：${L(a.desc)}`));
+    }
+    // KPI 總覽
+    if (role.overview) {
+      out.push(`\n**${lang === 'en' ? 'KPI Overview' : 'KPI 總覽'}**`);
+      role.overview.forEach(o => {
+        const cat = o.cat === 'primary' ? lang === 'en' ? 'Primary' : '主指標' : o.cat === 'bonus' ? lang === 'en' ? 'Bonus' : '加分' : lang === 'en' ? 'Admin' : '行政';
+        out.push(`- [${cat}] ${o.no || ''} ${L(o.name)}${o.star ? ' ⭐' : ''} — ${o.cat === 'bonus' ? '+' : ''}${o.weight}%`);
+      });
+      if (role.scoring_principle) out.push(`\n_${L(role.scoring_principle)}_`);
+    }
+    // 各指標
+    (role.indicators || []).forEach(ind => {
+      out.push(`\n**${ind.no} ${L(ind.name)}${ind.star ? ' ⭐' : ''}（${ind.bonus ? '+' : ''}${ind.weight}%）**`);
+      if (ind.what) out.push(`- ${lang === 'en' ? 'What' : '是什麼'}：${L(ind.what)}`);
+      if (ind.why) out.push(`- ${lang === 'en' ? 'Why' : '為什麼'}：${L(ind.why)}`);
+      if (ind.who) out.push(`- ${lang === 'en' ? 'Who' : '誰來做'}：${L(ind.who)}`);
+      if (ind.when) out.push(`- ${lang === 'en' ? 'When' : '何時做'}：${L(ind.when)}`);
+      if (ind.table) dumpTable(ind.table);
+      if (ind.table2) dumpTable(ind.table2);
+      if (ind.note) out.push(`\n_${L(ind.note)}_`);
+    });
+    // 行政
+    if (role.admin && role.admin.length) {
+      out.push(`\n**${lang === 'en' ? 'Administrative' : '行政'}**`);
+      role.admin.forEach(item => {
+        out.push(`\n_${L(item.name)}${item.weight ? ` (${item.weight}%)` : ''}_`);
+        if (item.what) out.push(`${L(item.what)}`);
+        if (item.table) dumpTable(item.table);
+        if (item.note) out.push(`_${L(item.note)}_`);
+      });
+    }
+    // 必備能力
+    if (role.competencies) {
+      out.push(`\n**${lang === 'en' ? 'Required Competencies' : '必備能力'}**`);
+      if (role.competencies.core) {
+        out.push(`\n_${lang === 'en' ? 'Core' : '核心必備'}_`);
+        Larr(role.competencies.core).forEach(b => out.push(`- ${b}`));
+      }
+      if (role.competencies.advanced) {
+        out.push(`\n_${lang === 'en' ? 'Advanced' : '進階'}_`);
+        Larr(role.competencies.advanced).forEach(b => out.push(`- ${b}`));
+      }
+    }
+    // 工作內容
+    if (role.work_content) {
+      out.push(`\n**${lang === 'en' ? 'Work Content' : '工作內容'}**`);
+      role.work_content.forEach(wg => {
+        const gname = wg.group && typeof wg.group === 'object' ? L(wg.group) : wg.group;
+        out.push(`\n_${gname}_`);
+        Larr(wg.items).forEach(b => out.push(`- ${b}`));
+      });
+    }
+  });
+  function dumpTable(tbl) {
+    if (!tbl || !tbl.head) return;
+    const head = tbl.head[lang] || tbl.head.zh || tbl.head.en;
+    if (!head) return;
+    out.push('');
+    out.push('| ' + head.join(' | ') + ' |');
+    out.push('| ' + head.map(() => '---').join(' | ') + ' |');
+    (tbl.rows || []).forEach(r => {
+      const cells = r[lang] || r.zh || r.en;
+      if (cells) out.push('| ' + cells.join(' | ') + ' |');
+    });
+    out.push('');
+  }
+  return out.join('\n');
+}
+function downloadMarkdown(DATA, KPI, lang) {
+  const md = buildMarkdown(DATA, KPI, lang);
+  const blob = new Blob([md], {
+    type: 'text/markdown;charset=utf-8'
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const suffix = lang === 'en' ? 'EN' : lang === 'zh_cn' ? 'SC' : 'TC';
+  a.href = url;
+  a.download = `WIN-HOUSE_職級地圖_職務說明書_${suffix}.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
 // 頂層 App
 // ============================================================
 function App() {
@@ -2001,11 +2286,17 @@ function App() {
       color: C.textSub,
       margin: 0
     }
-  }, t.siteSub)), e('div', {
+  }, t.siteSub)),
+  // 語言切換：design system 分段式控制器（segmented control）
+  e('div', {
     style: {
       display: 'flex',
-      gap: 4,
-      alignItems: 'center'
+      alignItems: 'center',
+      gap: 2,
+      padding: 3,
+      background: '#F5F5F5',
+      borderRadius: 9999,
+      border: '1px solid #E5E5E5'
     }
   }, LANGS.map(l => {
     const active = lang === l.id;
@@ -2013,18 +2304,16 @@ function App() {
       key: l.id,
       onClick: () => setLang(l.id),
       style: {
-        width: 48,
-        height: 32,
-        padding: 0,
-        background: active ? C.selected : C.bg,
-        color: active ? C.selectedText : C.text,
-        border: `1px solid ${active ? C.selected : C.line}`,
+        background: active ? '#1A1A1A' : 'transparent',
+        border: 'none',
+        color: active ? '#FFFFFF' : '#737373',
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: '0.08em',
+        padding: '6px 14px',
+        borderRadius: 9999,
         cursor: 'pointer',
-        fontSize: 12,
-        fontWeight: active ? 600 : 400,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        transition: `all 0.18s ${BTN.ease}`
       }
     }, l.label);
   }))),
@@ -2052,11 +2341,11 @@ function App() {
         background: active ? C.selected : C.bg,
         color: active ? C.selectedText : C.text,
         border: `1.5px solid ${active ? C.selected : C.line}`,
-        borderRadius: 8,
+        borderRadius: BTN.radius,
         cursor: 'pointer',
         fontSize: 15,
         fontWeight: active ? 700 : 500,
-        transition: 'all 0.15s ease'
+        transition: `all 0.18s ${BTN.ease}`
       }
     }, tb.label);
   })),
